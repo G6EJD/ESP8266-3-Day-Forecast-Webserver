@@ -38,8 +38,8 @@ String SITE_WIDTH =  "900";
 String icon_set   =  "k";
 String Units      =  "X"; // Default use either M for Metric, X for Mixed and I for Imperial
 
-const char *ssid     = "SKY6D12C";
-const char *password = "WQSUBEPQ";
+const char *ssid     = "your SSID";
+const char *password = "your PWD";
 
 //################ PROGRAM VARIABLES and OBJECTS ################
 // Conditions
