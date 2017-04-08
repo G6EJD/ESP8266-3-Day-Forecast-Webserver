@@ -29,7 +29,7 @@ String version = "3.0";       // Version of this program
 // Use your own API key by signing up for a free developer account at http://www.wunderground.com/weather/api/
 int    port          = 5000;
 String API_key       = "2--------------7";            // See: http://www.wunderground.com/weather/api/d/docs (change here with your KEY)
-String City          = "Melksham";                    // Your home city
+String City          = "Lyneham";                     // Your home city
 String Country       = "UK";                          // Your country   
 String Conditions    = "conditions";                  // See: http://www.wunderground.com/weather/api/d/docs?d=data/index&MR=1
 char   wxserver[]    = "api.wunderground.com";        // Address for WeatherUnderGround
