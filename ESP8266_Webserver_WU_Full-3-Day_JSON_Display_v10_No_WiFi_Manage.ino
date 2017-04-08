@@ -38,8 +38,8 @@ String SITE_WIDTH =  "900";
 String icon_set   =  "k";
 String Units      =  "X"; // Default use either M for Metric, X for Mixed and I for Imperial
 
-const char *ssid     = "your SSID";
-const char *password = "your PWD";
+const char *ssid     = "your_ssid";
+const char *password = "your_pwd";
 
 //################ PROGRAM VARIABLES and OBJECTS ################
 // Conditions
@@ -143,30 +143,30 @@ void homepage(){
   webpage += F("      </tr>");
   webpage += F("      <tr>");
   webpage += F("        <td class='style9'>");
-  webpage += "            "+winddirsymbol(&DW_dir1) + " @ " + DW_mph1 + "mph";
+  webpage += "            "+winddirsymbol(&DW_dir1) + " @ " + DW_mph1;
   webpage += F("        </td>");
   webpage += F("        <td class='style9'>");
-  webpage += "            "+winddirsymbol(&DW_dir2) + " @ " + DW_mph2 + "mph";
+  webpage += "            "+winddirsymbol(&DW_dir2) + " @ " + DW_mph2;
   webpage += F("        </td>");
   webpage += F("        <td class='style9'>");
-  webpage += "            "+winddirsymbol(&DW_dir3) + " @ " + DW_mph3 + "mph";
+  webpage += "            "+winddirsymbol(&DW_dir3) + " @ " + DW_mph3;
   webpage += F("        </td>");
   webpage += F("        <td class='style9'>");
-  webpage += "            "+winddirsymbol(&DW_dir4) + " @ " + DW_mph4 + "mph";
+  webpage += "            "+winddirsymbol(&DW_dir4) + " @ " + DW_mph4;
   webpage += F("        </td>");
   webpage += F("      </tr>");
   webpage += F("      <tr>");
   webpage += F("        <td class='style8'>");
-  webpage += "            "+DPop1+"% chance of "+(DRain1=="0"?"rain":DRain1+"mm rain");
+  webpage += "            "+DPop1+"% chance of "+((DRain1=="0mm"||DRain1=="0in")?"rain":DRain1+" rain");
   webpage += F("        </td>");
   webpage += F("        <td class='style8'>");
-  webpage += "            "+DPop2+"% chance of "+(DRain2=="0"?"rain":DRain2+"mm rain");
+  webpage += "            "+DPop2+"% chance of "+((DRain2=="0mm"||DRain2=="0in")?"rain":DRain2+" rain");
   webpage += F("        </td>");
   webpage += F("        <td class='style8'>");
-  webpage += "            "+DPop3+"% chance of "+(DRain3=="0"?"rain":DRain3+"mm rain");
+  webpage += "            "+DPop3+"% chance of "+((DRain3=="0mm"||DRain3=="0in")?"rain":DRain3+" rain");
   webpage += F("        </td>");
   webpage += F("        <td class='style8'>");
-  webpage += "            "+DPop4+"% chance of "+(DRain4=="0"?"rain":DRain4+"mm rain");
+  webpage += "            "+DPop4+"% chance of "+((DRain4=="0mm"||DRain4=="0in")?"rain":DRain4+" rain");
   webpage += F("        </td>");
   webpage += F("      </tr>");
   webpage += F("    </table>");
@@ -257,64 +257,106 @@ bool showWeather_forecast(char *json) {
   }
 
   JsonObject& forecast = root["forecast"]["simpleforecast"];
+  String WDay1      = forecast["forecastday"][0]["date"]["weekday_short"];   DWDay1      = WDay1;
+  int DateDa1       = forecast["forecastday"][0]["date"]["day"];             DDateDa1    = DateDa1<10?"0"+String(DateDa1):String(DateDa1);
   String Temp_mon   = forecast["forecastday"][0]["date"]["monthname"];
   String Mon1       = forecast["forecastday"][0]["date"]["monthname_short"]; DMon1       = Mon1;
   int DateYr1       = forecast["forecastday"][0]["date"]["year"];            DDateYr1    = String(DateYr1).substring(2);
-  int DateDa1       = forecast["forecastday"][0]["date"]["day"];             DDateDa1    = DateDa1<10?"0"+String(DateDa1):String(DateDa1);
   observationtime   = "from " + String(DDateDa1) + " " + Temp_mon + ", " + DateYr1;
-  String WDay1      = forecast["forecastday"][0]["date"]["weekday_short"];   DWDay1      = WDay1;
-  int Htemp1        = forecast["forecastday"][0]["high"]["celsius"];         DHtemp1     = String(Htemp1);
-  int Ltemp1        = forecast["forecastday"][0]["low"]["celsius"];          DLtemp1     = String(Ltemp1);
+  if (Units == "M" || Units == "X") {
+    int Htemp1        = forecast["forecastday"][0]["high"]["celsius"];       DHtemp1     = String(Htemp1);
+    int Ltemp1        = forecast["forecastday"][0]["low"]["celsius"];        DLtemp1     = String(Ltemp1);
+    int rain1         = forecast["forecastday"][0]["qpf_allday"]["mm"];      DRain1      = String(rain1)+"mm";
+    if (Units == "M") {int w_mph1 = forecast["forecastday"][0]["avewind"]["kph"];  DW_mph1 = String(w_mph1)+"kph";}
+    else {int w_mph1   = forecast["forecastday"][0]["avewind"]["mph"];  DW_mph1 = String(w_mph1)+"mph";}
+  }
+  else
+  {
+    int Htemp1        = forecast["forecastday"][0]["high"]["fahrenheit"];    DHtemp1     = String(Htemp1);
+    int Ltemp1        = forecast["forecastday"][0]["low"]["fahrenheit"];     DLtemp1     = String(Ltemp1);
+    int rain1         = forecast["forecastday"][0]["qpf_allday"]["in"];      DRain1      = String(rain1)+"in";
+    int w_mph1        = forecast["forecastday"][0]["avewind"]["mph"];        DW_mph1     = String(w_mph1)+"mph";
+  }
   String icon_url1  = forecast["forecastday"][0]["icon_url"];           
   Dicon_url1        = icon_url1.substring(0,icon_url1.indexOf("/i/c/")+5) + icon_set + icon_url1.substring(icon_url1.indexOf("/i/c/")+6);
   String pop1       = forecast["forecastday"][0]["pop"];                     DPop1       = String(pop1);
-  int rain1         = forecast["forecastday"][0]["qpf_allday"]["mm"];        DRain1      = String(rain1);
-  int w_mph1        = forecast["forecastday"][0]["avewind"]["mph"];          DW_mph1     = String(w_mph1);
   String w_dir1     = forecast["forecastday"][0]["avewind"]["dir"];          DW_dir1     = String(w_dir1);
   String w_dir_deg1 = forecast["forecastday"][0]["avewind"]["degrees"];      DW_dir_deg1 = String(w_dir_deg1);
   int humi1         = forecast["forecastday"][0]["avehumidity"];             DHumi1      = String(humi1);
 
   String WDay2      = forecast["forecastday"][1]["date"]["weekday_short"];   DWDay2      = WDay2;
-  String Mon2       = forecast["forecastday"][1]["date"]["monthname_short"]; DMon2       = Mon2;
   int DateDa2       = forecast["forecastday"][1]["date"]["day"];             DDateDa2    = DateDa2<10?"0"+String(DateDa2):String(DateDa2);
+  String Mon2       = forecast["forecastday"][1]["date"]["monthname_short"]; DMon2       = Mon2;
   int DateYr2       = forecast["forecastday"][1]["date"]["year"];            DDateYr2    = String(DateYr2).substring(2);
-  int Htemp2        = forecast["forecastday"][1]["high"]["celsius"];         DHtemp2     = String(Htemp2);
-  int Ltemp2        = forecast["forecastday"][1]["low"]["celsius"];          DLtemp2     = String(Ltemp2);
+  if (Units == "M" || Units == "X") {
+    int Htemp2        = forecast["forecastday"][1]["high"]["celsius"];       DHtemp2     = String(Htemp2);
+    int Ltemp2        = forecast["forecastday"][1]["low"]["celsius"];        DLtemp2     = String(Ltemp2);
+    int rain2         = forecast["forecastday"][1]["qpf_allday"]["mm"];      DRain2      = String(rain2)+"mm";
+    if (Units == "M"){int w_mph2 = forecast["forecastday"][1]["avewind"]["kph"]; DW_mph2 = String(w_mph2)+"kph";}
+    else {int w_mph2  = forecast["forecastday"][1]["avewind"]["mph"];        DW_mph2     = String(w_mph2)+"mph";
+    }
+  }
+  else
+  {
+    int Htemp2        = forecast["forecastday"][1]["high"]["fahrenheit"];    DHtemp2     = String(Htemp2);
+    int Ltemp2        = forecast["forecastday"][1]["low"]["fahrenheit"];     DLtemp2     = String(Ltemp2);
+    int rain2         = forecast["forecastday"][1]["qpf_allday"]["in"];      DRain2      = String(rain2)+"in";
+    int w_mph2        = forecast["forecastday"][1]["avewind"]["mph"];        DW_mph2     = String(w_mph2)+"mph";
+  }
   String icon_url2  = forecast["forecastday"][1]["icon_url"];           
   Dicon_url2        = icon_url2.substring(0,icon_url2.indexOf("/i/c/")+5) + icon_set + icon_url2.substring(icon_url2.indexOf("/i/c/")+6);
   String pop2       = forecast["forecastday"][1]["pop"];                     DPop2       = String(pop2);
-  int rain2         = forecast["forecastday"][1]["qpf_allday"]["mm"];        DRain2      = String(rain2);
-  int w_mph2        = forecast["forecastday"][1]["avewind"]["mph"];          DW_mph2     = String(w_mph2);
   String w_dir2     = forecast["forecastday"][1]["avewind"]["dir"];          DW_dir2     = String(w_dir2);
   String w_dir_deg2 = forecast["forecastday"][1]["avewind"]["degrees"];      DW_dir_deg2 = String(w_dir_deg2);
   int humi2         = forecast["forecastday"][1]["avehumidity"];             DHumi2      = String(humi2);
 
   String WDay3      = forecast["forecastday"][2]["date"]["weekday_short"];   DWDay3      = WDay3;
-  String Mon3       = forecast["forecastday"][2]["date"]["monthname_short"]; DMon3       = Mon3;
   int DateDa3       = forecast["forecastday"][2]["date"]["day"];             DDateDa3    = DateDa3<10?"0"+String(DateDa3):String(DateDa3);
+  String Mon3       = forecast["forecastday"][2]["date"]["monthname_short"]; DMon3       = Mon3;
   int DateYr3       = forecast["forecastday"][2]["date"]["year"];            DDateYr3    = String(DateYr3).substring(2);
-  int Htemp3        = forecast["forecastday"][2]["high"]["celsius"];         DHtemp3     = String(Htemp3);
-  int Ltemp3        = forecast["forecastday"][2]["low"]["celsius"];          DLtemp3     = String(Ltemp3);
+  if (Units == "M" || Units == "X") {
+    int Htemp3        = forecast["forecastday"][2]["high"]["celsius"];       DHtemp3     = String(Htemp3);
+    int Ltemp3        = forecast["forecastday"][2]["low"]["celsius"];        DLtemp3     = String(Ltemp3);
+    int rain3         = forecast["forecastday"][2]["qpf_allday"]["mm"];      DRain3      = String(rain3)+"mm";
+    if (Units == "M") {int w_mph3 = forecast["forecastday"][2]["avewind"]["kph"]; DW_mph3 = String(w_mph3)+"kph"; }
+    else {int w_mph3  = forecast["forecastday"][2]["avewind"]["mph"];        DW_mph3     = String(w_mph3)+"mph"; }
+  }
+  else
+  {
+    int Htemp3        = forecast["forecastday"][2]["high"]["fahrenheit"];    DHtemp3     = String(Htemp3);
+    int Ltemp3        = forecast["forecastday"][2]["low"]["fahrenheit"];     DLtemp3     = String(Ltemp3);
+    int rain3         = forecast["forecastday"][2]["qpf_allday"]["in"];      DRain3      = String(rain3)+"in";
+    int w_mph3        = forecast["forecastday"][2]["avewind"]["mph"];        DW_mph3     = String(w_mph3)+"mph";
+  }
   String icon_url3  = forecast["forecastday"][2]["icon_url"];           
   Dicon_url3        = icon_url3.substring(0,icon_url3.indexOf("/i/c/")+5) + icon_set + icon_url3.substring(icon_url3.indexOf("/i/c/")+6);
   String pop3       = forecast["forecastday"][2]["pop"];                     DPop3       = String(pop3);
-  int rain3         = forecast["forecastday"][2]["qpf_allday"]["mm"];        DRain3      = String(rain3);
-  int w_mph3        = forecast["forecastday"][2]["avewind"]["mph"];          DW_mph3     = String(w_mph3);
   String w_dir3     = forecast["forecastday"][2]["avewind"]["dir"];          DW_dir3     = String(w_dir3);
   String w_dir_deg3 = forecast["forecastday"][2]["avewind"]["degrees"];      DW_dir_deg3 = String(w_dir_deg3);
   int humi3         = forecast["forecastday"][2]["avehumidity"];             DHumi3      = String(humi3);
 
   String WDay4      = forecast["forecastday"][3]["date"]["weekday_short"];   DWDay4      = WDay4;
-  String Mon4       = forecast["forecastday"][3]["date"]["monthname_short"]; DMon4       = Mon4;
   int DateDa4       = forecast["forecastday"][3]["date"]["day"];             DDateDa4    = DateDa4<10?"0"+String(DateDa4):String(DateDa4);
+  String Mon4       = forecast["forecastday"][3]["date"]["monthname_short"]; DMon4       = Mon4;
   int DateYr4       = forecast["forecastday"][3]["date"]["year"];            DDateYr4    = String(DateYr4).substring(2);
-  int Htemp4        = forecast["forecastday"][3]["high"]["celsius"];         DHtemp4     = String(Htemp4);
-  int Ltemp4        = forecast["forecastday"][3]["low"]["celsius"];          DLtemp4     = String(Ltemp4);
+  if (Units == "M" || Units == "X") {
+    int Htemp4        = forecast["forecastday"][3]["high"]["celsius"];       DHtemp4     = String(Htemp4);
+    int Ltemp4        = forecast["forecastday"][3]["low"]["celsius"];        DLtemp4     = String(Ltemp4);
+    int rain4         = forecast["forecastday"][3]["qpf_allday"]["mm"];      DRain4      = String(rain4)+"mm";
+    if (Units == "M") {int w_mph4 = forecast["forecastday"][3]["avewind"]["kph"]; DW_mph4 = String(w_mph4)+"kph";}
+    else {int w_mph4  = forecast["forecastday"][3]["avewind"]["mph"];        DW_mph4     = String(w_mph4)+"mph";}
+  }
+  else
+  {
+    int Htemp4        = forecast["forecastday"][3]["high"]["fahrenheit"];    DHtemp4     = String(Htemp4);
+    int Ltemp4        = forecast["forecastday"][3]["low"]["fahrenheit"];     DLtemp4     = String(Ltemp4);
+    int rain4         = forecast["forecastday"][3]["qpf_allday"]["in"];      DRain4      = String(rain4)+"in";
+    int w_mph4        = forecast["forecastday"][3]["avewind"]["mph"];        DW_mph4     = String(w_mph4)+"mph";
+  }
+  
   String icon_url4  = forecast["forecastday"][3]["icon_url"];           
   Dicon_url4        = icon_url4.substring(0,icon_url4.indexOf("/i/c/")+5) + icon_set + icon_url4.substring(icon_url4.indexOf("/i/c/")+6);
   String pop4       = forecast["forecastday"][3]["pop"];                     DPop4       = String(pop4);
-  int rain4         = forecast["forecastday"][3]["qpf_allday"]["mm"];        DRain4      = String(rain4);
-  int w_mph4        = forecast["forecastday"][3]["avewind"]["mph"];          DW_mph4     = String(w_mph4);
   String w_dir4     = forecast["forecastday"][3]["avewind"]["dir"];          DW_dir4     = String(w_dir4);
   String w_dir_deg4 = forecast["forecastday"][3]["avewind"]["degrees"];      DW_dir_deg4 = String(w_dir_deg4);
   int humi4         = forecast["forecastday"][3]["avehumidity"];             DHumi4      = String(humi4);
@@ -329,7 +371,7 @@ bool showWeather_forecast(char *json) {
 }
 
 String winddirsymbol(String *wdir){
-  if (*wdir == "N" || *wdir == "North") *wdir = "&darr; N "; // The API sometimes returns North rather than N
+  if (*wdir == "N" || *wdir == "North") *wdir = "&darr; N ";
   if (*wdir == "NNE")                   *wdir = "&swarr; NNE ";
   if (*wdir == "NE")                    *wdir = "&swarr; NE ";
   if (*wdir == "ENE")                   *wdir = "&swarr; ENE ";
@@ -446,7 +488,7 @@ void SystemSetup() {
         if (client_response.length() > 1) icon_set = "k"; else icon_set = client_response; // Checking for more than one check-box selected too
       }
       if (Argument_Name == "units") {
-        if (client_response.length() > 1) Units = "X"; Units = client_response; // Checking for more than one check-box selected too
+        if (client_response.length() > 1) Units = "X"; else Units = client_response; // Checking for more than one check-box selected too
       }
     }
   }
